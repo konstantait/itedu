@@ -3,19 +3,13 @@ provider "hcloud" {
 }
 
 locals {
-  project = "itedu-dns"
+  project = "itedu-web"
   
   rule = [
     {
       direction  = "in"
       protocol   = "tcp"
-      port       = "53"
-      source_ips = ["0.0.0.0/0"]
-    },
-    {
-      direction  = "in"
-      protocol   = "udp"
-      port       = "53"
+      port       = "80"
       source_ips = ["0.0.0.0/0"]
     }
   ]
@@ -33,37 +27,26 @@ module "default" {
   id = "fw-default"
 }
 
-module "allow-dns" {
+module "allow-http" {
   source = "./modules/firewalls"
   name = local.project
-  id = "fw-allow-dns"
+  id = "fw-allow-http"
+  rules = local.rule
 
 }
 
-module "master" {
+module "web" {
   source = "./modules/servers"
   name = local.project
-  id = "master"
+  id = "apache"
   ssh_keys = [module.key.name]
-  firewall_ids = [module.default.id, module.allow-dns.id]
-
-}
-
-module "slave" {
-  source = "./modules/servers"
-  name = local.project
-  id = "slave"
-  ssh_keys = [module.key.name]
-  firewall_ids = [module.default.id, module.allow-dns.id]
+  firewall_ids = [module.default.id, module.allow-http.id]
 }
 
 resource "local_file" "ansible" {
   content = templatefile("inventory.tpl", {
-    master_ip = module.master.public_ip,
-    master_name = module.master.name,
-    slave_ip = module.slave.public_ip,
-    slave_name = module.slave.name,
-    
+    master_ip = module.web.public_ip,
+    master_name = module.web.name,
   })
 
   filename = "inventory.ini"

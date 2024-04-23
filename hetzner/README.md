@@ -34,7 +34,8 @@ curl -H "Authorization: Bearer $TF_VAR_hcloud_token" \
 
 curl -H "Authorization: Bearer $TF_VAR_hcloud_token" \
     'https://api.hetzner.cloud/v1/server_types'
-
+````
+````
 cd hetzner
 
 terraform init
@@ -42,7 +43,8 @@ terraform plan
 terraform apply
 terraform show
 terraform destroy
-
+````
+````
 cat inventory.ini
 
 ssh root@<IP-FROM-INVENORY> -i ~/.ssh/<RE-CREATED-KEY>.key
