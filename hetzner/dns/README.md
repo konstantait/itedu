@@ -47,7 +47,7 @@ terraform destroy
 ````
 cat inventory.ini
 
-ssh root@<IP-FROM-INVENORY> -i ~/.ssh/<RE-CREATED-KEY>.key
+ssh root@<IP-FROM-INVENTORY> -i ~/.ssh/<CREATED-KEY>.key
 ````
 
 ## Adding locally hosted code to GitHub
