@@ -1,11 +1,13 @@
 provider "hcloud" {
-  token = var.hcloud_token
+  token = var.cloud_token
+}
+
+provider "hetznerdns" {
+  apitoken = var.dns_token
 }
 
 locals {
-  project = "itedu"
-  
-  rule = [
+  rules = [
     {
       direction  = "in"
       protocol   = "tcp"
@@ -23,50 +25,115 @@ locals {
 
 module "key" {
   source = "../modules/keys"
-  name = local.project
-  id = "key"
+  project = var.project
+  name = "key"
+}
+
+module "ns1" {
+  source = "../modules/ips"
+  project = var.project
+  name = "ns1"
+
+  datacenter = var.datacenter
+}
+
+module "ns2" {
+  source = "../modules/ips"
+  project = var.project
+  name = "ns2"
+
+  datacenter = var.datacenter
+}
+
+resource "hetznerdns_zone" "domain" {
+    name = var.domain
+    ttl  = 60
+}
+
+resource "hetznerdns_record" "NS1" {
+  zone_id = hetznerdns_zone.domain.id
+  name = "@"
+  value = "ns1.${var.domain}."
+  type = "NS"
+  ttl= 60
+}
+
+resource "hetznerdns_record" "NS2" {
+  zone_id = hetznerdns_zone.domain.id
+  name = "@"
+  value = "ns2.${var.domain}."
+  type = "NS"
+  ttl= 60
+}
+
+resource "hetznerdns_record" "NS1A" {
+  zone_id = hetznerdns_zone.domain.id
+  name = "ns1"
+  value = module.ns1.ip
+  type = "A"
+  ttl= 60
+}
+
+resource "hetznerdns_record" "NS2A" {
+  zone_id = hetznerdns_zone.domain.id
+  name = "ns2"
+  value = module.ns2.ip
+  type = "A"
+  ttl= 60
 }
 
 module "default" {
   source = "../modules/firewalls"
-  name = local.project
-  id = "fw-default"
+  project = var.project
+  name = "fw-default"
 }
 
 module "allow" {
   source = "../modules/firewalls"
-  name = local.project
-  id = "fw-allow-dns"
-  rules = local.rule
+  project = var.project
+  name = "fw-allow-dns"
+  
+  rules = local.rules
 }
 
 module "master" {
   source = "../modules/servers"
-  name = local.project
-  id = "master"
+  project = var.project
+  name = "master"
+
   ssh_keys = [module.key.name]
   firewall_ids = [module.default.id, module.allow.id]
+  ip = module.ns1.id
+
+  image = var.image
+  server_type = var.server_type
+  location = var.location
+
+  user_data = templatefile("./files/user_data.sh", {
+    environment = "master"
+    domain = var.domain
+    master_ip = module.ns1.ip,
+    slave_ip = module.ns2.ip,
+  })
 }
 
 module "slave" {
   source = "../modules/servers"
-  name = local.project
-  id = "slave"
+  project= var.project
+  name = "slave"
+  
   ssh_keys = [module.key.name]
   firewall_ids = [module.default.id, module.allow.id]
-}
+  ip = module.ns2.id
 
-resource "local_file" "ansible" {
-  content = templatefile("inventory-dns.tpl", {
-    master_ip = module.master.public_ip,
-    master_name = module.master.name,
-    slave_ip = module.slave.public_ip,
-    slave_name = module.slave.name,
-  })
-
-  filename = "inventory-dns.ini"
+  server_type = var.server_type
+  location = var.location
+  image = var.image
   
-  # lifecycle {
-  #   prevent_destroy = true
-  # }
+  user_data = templatefile("./files/user_data.sh", {
+    environment = "slave"
+    domain = var.domain
+    master_ip = module.ns1.ip,
+    slave_ip = module.ns2.ip,
+  })
 }

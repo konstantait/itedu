@@ -1,79 +1,26 @@
-## Terraform install 
-
 ````
-sudo apt-get update
-
-sudo apt-get install -y gnupg software-properties-common
-
-wget -O- https://apt.releases.hashicorp.com/gpg | \
-    gpg --dearmor | \
-    sudo tee /usr/share/keyrings/hashicorp.gpg > /dev/null
-
-gpg --no-default-keyring \
-    --keyring /usr/share/keyrings/hashicorp.gpg \
-    --fingerprint
-
-echo "deb [signed-by=/usr/share/keyrings/hashicorp.gpg] \
-    https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
-    sudo tee /etc/apt/sources.list.d/hashicorp.list
-
-sudo apt-get update
-
-sudo apt-get install terraform
+# terminal 1
+cd itedu/hetzner/dns
+chmod +x ./build.sh
+./build.sh
 ````
 
-## Manage Hetzner Cloud Servers
-
-Sign in into the Hetzner Cloud Console choose a Project, go to Security -> API Tokens, and generate a new token
-
 ````
-echo 'export TF_VAR_hcloud_token=<HETZNER-API-TOKEN>' >> ~/.bashrc 
+# terminal 2
+cd itedu/hetzner/dns
+set -o allexport; source .env; set +o allexport
 
-curl -H "Authorization: Bearer $TF_VAR_hcloud_token" \
-    'https://api.hetzner.cloud/v1/images'
-
-curl -H "Authorization: Bearer $TF_VAR_hcloud_token" \
-    'https://api.hetzner.cloud/v1/server_types'
-````
-````
-cd hetzner
-
-terraform init
-terraform plan
-terraform apply
-terraform show
-terraform destroy
-````
-````
-cat inventory.ini
-
-ssh root@<IP-FROM-INVENTORY> -i ~/.ssh/<CREATED-KEY>.key
+ssh ${CLOUD_SSH_USERNAME}@${CLOUD_NS1} -i ~/.ssh/${CLOUD_SSH_KEY}.key
+ssh ${CLOUD_SSH_USERNAME}@${CLOUD_NS2} -i ~/.ssh/${CLOUD_SSH_KEY}.key
 ````
 
-## Adding locally hosted code to GitHub
+cat /var/log/syslog | grep named
 
-Sign in into the GitHub, go to Setting -> Developer Settings -> Personal access tokens (classic), and generate a new token
+named-checkconf /etc/bind/named.conf
+named-checkzone konstanta.pp.ua /var/named/konstanta.pp.ua.db
+service bind9 restart
+service bind9 status
 
-````
-echo 'export GITHUB_user=<GITHUB_USER>' >> ~/.bashrc
-echo 'export GITHUB_token=<GITHUB_TOKEN>' >> ~/.bashrc
+nslookup "@${CLOUD_DOMAIN}"
 
-git config --global user.name '<GITHUB_USER>'
-git config --global user.email '<GITHUB_EMAIL>'
-
-git init -b main
-git add .
-git commit -m 'initial commit'
-````
-
-Create a new repository on GitHub.com. Do not initialize the new repository with README, license, or gitignore files. 
-
-````
-git remote show origin
-git remote add origin https://$GITHUB_user:$GITHUB_token@github.com/$GITHUB_user/<CREATED-GITHUB_REPO>.git
-git remote show origin
-git push --set-upstream origin main
-git push
-
-git reflog
-````
+dig @${CLOUD_NS1} ${CLOUD_DOMAIN}

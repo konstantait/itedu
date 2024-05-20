@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# shellcheck disable=2269
+# shellcheck disable=2034
+
+# global variables from .bashrc
+CLOUD_TOKEN="$HETZNER_CLOUD_API_TOKEN"
+
+# global project variables
+CLOUD_PROJECT="itedu-web"
+
+# packer input variables
+CLOUD_TOKEN="$CLOUD_TOKEN"
+CLOUD_PROJECT="$CLOUD_PROJECT"
+CLOUD_IMAGE="debian-11"
+CLOUD_SERVER_TYPE="cax11"
+CLOUD_LOCATION="hel1"
+CLOUD_SSH_USERNAME="root"
+
+# packer output variables from manifest.json
+CLOUD_IMAGE_ID="$CLOUD_IMAGE_ID"
+
+# terraform input variables
+CLOUD_TOKEN="$CLOUD_TOKEN"
+DNS_TOKEN="$DNS_TOKEN"
+CLOUD_PROJECT="$CLOUD_PROJECT"
+CLOUD_SERVER_TYPE="$CLOUD_SERVER_TYPE"
+CLOUD_LOCATION="$CLOUD_LOCATION"
+CLOUD_DATACENTER="${CLOUD_LOCATION}-dc2"
+CLOUD_IMAGE_ID="$CLOUD_IMAGE_ID"
+
+# terraform output variables
+CLOUD_SSH_KEY="$CLOUD_SSH_KEY"
+CLOUD_IP="$CLOUD_IP"

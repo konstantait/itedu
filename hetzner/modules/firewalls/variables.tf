@@ -1,10 +1,10 @@
 
-variable "name" {
+variable "project" {
   type        = string
   default     = "firewall"
 }
 
-variable "id" {
+variable "name" {
   type = string
   default = ""
 }
@@ -46,31 +46,31 @@ variable "rules" {
 
   validation {
     condition     = contains(["in", "out"], var.rules[0].direction)
-    error_message = "Direction could only be `in` or `out`. Please use a valid direction value."
+    error_message = "Direction could only be 'in' or 'out'."
   }
 
   validation {
     condition     = contains(["tcp", "udp", "icmp", "udp", "gre", "esp"], var.rules[0].protocol)
-    error_message = "Only one of this list of protocols could be used [`tcp`, `icmp`, `udp`, `gre`, `esp`]. Please use a valid protocol value."
+    error_message = "Only one of this list of protocols could be used ['tcp', 'icmp', 'udp', 'gre', 'esp']."
   }
 
   validation {
     condition = alltrue([
       for rule in var.rules : false if(rule.direction == "out" && rule.destination_ips == null)
     ])
-    error_message = "When `direction` is set to 'out', `destination_ips` list with at least one CIDR must be added."
+    error_message = "When 'direction' is set to 'out', 'destination_ips' list with at least one CIDR must be added."
   }
 
   validation {
     condition = alltrue([
       for rule in var.rules : false if(rule.direction == "in" && rule.source_ips == null)
     ])
-    error_message = "When `direction` is set to 'in', `source_ips` list with at least one CIDR must be added."
+    error_message = "When 'direction' is set to 'in', 'source_ips' list with at least one CIDR must be added."
   }
 
   validation {
     condition     = contains(["tcp", "udp"], var.rules[0].protocol) ? var.rules[0].port != null : true
-    error_message = "If `protocol` is set to either 'tcp' or 'udp', `port` must be set."
+    error_message = "If 'protocol' is set to either 'tcp' or 'udp', 'port' must be set."
   }
 }
 

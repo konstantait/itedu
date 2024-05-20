@@ -1,9 +1,9 @@
-variable "name" {
+variable "project" {
   type = string
   default = "key"
 }
 
-variable "id" {
+variable "name" {
   type = string
   default = ""
 }

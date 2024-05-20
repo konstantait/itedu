@@ -1,11 +1,5 @@
-resource "random_id" "random" {
-    byte_length = 4
-}
-
 locals {
-  full_name = "${var.name}-${var.id}"
-  random_name = "${var.name}-${random_id.random.hex}"
-  name = var.id == "" ? local.random_name : local.full_name
+  name = var.name == "" ? "${var.project}-${formatdate("YYYYMMDDhhmmss", timestamp())}" : "${var.project}-${var.name}"
 }
 
 resource "hcloud_server" "this" {
@@ -16,4 +10,11 @@ resource "hcloud_server" "this" {
   ssh_keys = var.ssh_keys
   firewall_ids = var.firewall_ids
   labels = var.labels
+  user_data = var.user_data
+  
+  public_net {
+    ipv4_enabled = true
+    ipv4 = var.ip
+    ipv6_enabled = false
+  }
 }

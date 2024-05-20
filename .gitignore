@@ -3,6 +3,8 @@
 *.log
 venv/
 
+.manifest.json
+
 .terraform.lock.hcl
 
 # Local .terraform directories

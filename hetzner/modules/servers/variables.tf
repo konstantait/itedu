@@ -1,9 +1,9 @@
-variable "name" {
+variable "project" {
   type = string
-  default = "key"
+  default = "server"
 }
 
-variable "id" {
+variable "name" {
   type = string
   default = ""
 }
@@ -23,17 +23,27 @@ variable "location" {
   default = "hel1"
 }
 
+variable "ip" {
+  type = string
+  default = ""
+}
+
 variable "ssh_keys" {
-  type        = list(string)
-  default     = []
+  type = list(string)
+  default = []
 }
 
 variable "firewall_ids" {
-  type        = list(string)
-  default     = []
+  type = list(string)
+  default = []
 }
 
 variable "labels" {
-  type        = map(string)
-  default     = {}
+  type = map(string)
+  default = {}
+}
+
+variable "user_data" {
+  type = string
+  default = ""
 }

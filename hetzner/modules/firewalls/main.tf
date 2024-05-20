@@ -1,11 +1,5 @@
-resource "random_id" "random" {
-    byte_length = 4
-}
-
 locals {
-  full_name = "${var.name}-${var.id}"
-  random_name = "${var.name}-${random_id.random.hex}"
-  name = var.id == "" ? local.random_name : local.full_name
+  name = var.name == "" ? "${var.project}-${formatdate("YYYYMMDDhhmmss", timestamp())}" : "${var.project}-${var.name}"
 }
 
 resource "hcloud_firewall" "this" {
